@@ -556,7 +556,7 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
 
         return value
 
-    def _load_custom_font_from_element_config(self, element_config: Dict[str, Any], default_size: int = 8, default_font_name: str = 'PressStart2P-Regular.ttf') -> ImageFont.FreeTypeFont:
+    def _load_custom_font_from_element_config(self, element_config: Dict[str, Any], default_size: int = 6, default_font_name: str = 'MatrixLight6.bdf') -> ImageFont.FreeTypeFont:
         """
         Load a custom font from an element configuration dictionary.
         
@@ -614,9 +614,9 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
         datetime_config = customization.get('datetime_text', {})
         
         # Load fonts as instance variables
-        self.team_font = self._load_custom_font_from_element_config(team_config, default_size=8)
-        self.odds_font = self._load_custom_font_from_element_config(odds_config, default_size=8)
-        self.datetime_font = self._load_custom_font_from_element_config(datetime_config, default_size=8)
+        self.team_font = self._load_custom_font_from_element_config(team_config, default_size=6)
+        self.odds_font = self._load_custom_font_from_element_config(odds_config, default_size=6)
+        self.datetime_font = self._load_custom_font_from_element_config(datetime_config, default_size=6)
         
         # Keep 'large' font in dict for error messages
         try:
