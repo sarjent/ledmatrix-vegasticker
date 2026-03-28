@@ -503,9 +503,6 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
         ncaam_config = plugin_leagues.get('ncaam_basketball', {})
         self.show_seeds_in_tournament = ncaam_config.get('show_seeds_in_tournament', True)
 
-        # Standings/ranking display below team logos (toggleable for all sports)
-        self.show_standings = get_config(display_options, 'show_standings', True)
-
         # Display mode: 'vegas' (default panel layout) or 'classic' (original ticker)
         self.display_mode = get_config(display_options, 'display_mode', 'vegas')
 
@@ -1917,23 +1914,6 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
         home_team_name_text = home_team_name
         home_team_record_text = game.get('home_record', '') or 'N/A'
 
-        # Standings/ranking text displayed below each team logo (toggleable)
-        away_standing = ""
-        home_standing = ""
-        if self.show_standings:
-            if (league_key in ('ncaam_basketball', 'ncaaw_basketball') and
-                    self.show_seeds_in_tournament and tournament_round):
-                s = game.get('away_seed', 0)
-                away_standing = str(s) if s else ""
-                s = game.get('home_seed', 0)
-                home_standing = str(s) if s else ""
-            elif league_key in ['ncaa_fb', 'ncaam_basketball']:
-                rankings = self._fetch_team_rankings(league_key)  # uses cached result
-                r = rankings.get(away_team_abbr, 0)
-                away_standing = str(r) if r else ""
-                r = rankings.get(home_team_abbr, 0)
-                home_standing = str(r) if r else ""
-
         # For live games, show scores instead of records
         if is_live and live_info:
             away_score = live_info.get('away_score', 0)
@@ -2009,14 +1989,6 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
         if away_logo:
             y_pos = (height - logo_size) // 2
             image.paste(away_logo, (current_x, y_pos), away_logo if away_logo.mode == 'RGBA' else None)
-        # Standings number below away logo
-        if away_standing:
-            st_font = datetime_font
-            st_font_h = st_font.size if hasattr(st_font, 'size') else 8
-            st_w = int(temp_draw.textlength(away_standing, font=st_font))
-            st_x = current_x + (logo_size - st_w) // 2
-            st_y = max(0, height - st_font_h - 1)
-            draw.text((st_x, st_y), away_standing, font=st_font, fill=(255, 255, 0))
         current_x += logo_size + h_padding
 
         # "vs."
@@ -2029,14 +2001,6 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
         if home_logo:
             y_pos = (height - logo_size) // 2
             image.paste(home_logo, (current_x, y_pos), home_logo if home_logo.mode == 'RGBA' else None)
-        # Standings number below home logo
-        if home_standing:
-            st_font = datetime_font
-            st_font_h = st_font.size if hasattr(st_font, 'size') else 8
-            st_w = int(temp_draw.textlength(home_standing, font=st_font))
-            st_x = current_x + (logo_size - st_w) // 2
-            st_y = max(0, height - st_font_h - 1)
-            draw.text((st_x, st_y), home_standing, font=st_font, fill=(255, 255, 0))
         current_x += logo_size + h_padding
 
         # Team Info — 4 rows: away name / away record / home name / home record

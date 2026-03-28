@@ -87,11 +87,6 @@
           "default": "vegas",
           "description": "Display mode: 'vegas' shows the panel layout with stacked team info, blue team names, and integrated spread/O/U (default). 'classic' shows the original ticker with combined team/record lines and a separate odds column."
         },
-        "show_standings": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show team ranking or standing number below each team logo. For NCAA sports this shows AP rankings or tournament seeds; support for other leagues may be added in future versions."
-        },
         "show_channel_logos": {
           "type": "boolean",
           "default": true,
