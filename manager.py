@@ -615,8 +615,8 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
         
         # Load fonts as instance variables
         self.team_font = self._load_custom_font_from_element_config(team_config, default_size=6)
-        self.odds_font = self._load_custom_font_from_element_config(odds_config, default_size=6)
-        self.datetime_font = self._load_custom_font_from_element_config(datetime_config, default_size=6)
+        self.odds_font = self._load_custom_font_from_element_config(odds_config, default_size=7, default_font_name='5x7.bdf')
+        self.datetime_font = self._load_custom_font_from_element_config(datetime_config, default_size=7, default_font_name='5x7.bdf')
         
         # Keep 'large' font in dict for error messages
         try:

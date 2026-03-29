@@ -686,7 +686,7 @@
                 "8x13B.bdf",
                 "PressStart2P-Regular.ttf"
               ],
-              "default": "MatrixLight6.bdf"
+              "default": "5x7.bdf"
             },
             "font_size": {
               "type": "integer",
@@ -694,7 +694,7 @@
               "description": "Font size in pixels. MatrixLight6/tom-thumb work best at 6, 5x7 at 7, MatrixChunky8 at 8.",
               "minimum": 4,
               "maximum": 16,
-              "default": 6
+              "default": 7
             }
           },
           "x-propertyOrder": ["font", "font_size"],
@@ -732,7 +732,7 @@
                 "8x13B.bdf",
                 "PressStart2P-Regular.ttf"
               ],
-              "default": "MatrixLight6.bdf"
+              "default": "5x7.bdf"
             },
             "font_size": {
               "type": "integer",
