@@ -6,6 +6,9 @@ A LEDMatrix plugin that displays scrolling odds, betting lines, and live scores 
 
 ## Changelog
 
+### 1.4.0 (2026-06-28)
+- **Feature:** MLB (and MiLB/NCAA baseball) pre-game displays now show each team's probable starting pitcher's jersey number in parentheses next to their record. Live games show the current pitcher's jersey number next to the pitching team's score, updated each refresh.
+
 ### 1.3.0 (2026-02-23)
 - **Feature:** Added per-league `today_only` boolean option. When `true`, only games scheduled for the current calendar day are fetched and displayed for that league, instead of the full `future_fetch_days` lookahead window. Useful for high-volume leagues (NCAA basketball, MLB) where you only want today's slate.
 

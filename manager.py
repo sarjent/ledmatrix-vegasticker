@@ -1248,6 +1248,18 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
                                 # Build game dict (existing logic)
                                 home_record = home_team.get('records', [{}])[0].get('summary', '') if home_team.get('records') else ''
                                 away_record = away_team.get('records', [{}])[0].get('summary', '') if away_team.get('records') else ''
+
+                                # Probable starting pitcher jersey numbers (pre-game baseball only)
+                                home_probable_jersey = ''
+                                away_probable_jersey = ''
+                                if league_config.get('sport') == 'baseball' and status_state != 'in':
+                                    for comp in [home_team, away_team]:
+                                        probables = comp.get('probables', [])
+                                        jersey = probables[0].get('athlete', {}).get('jersey', '') if probables else ''
+                                        if comp['homeAway'] == 'home':
+                                            home_probable_jersey = jersey
+                                        else:
+                                            away_probable_jersey = jersey
                                 
                                 # Dynamically set update interval based on game start time
                                 time_until_game = game_time - now
@@ -1345,7 +1357,9 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
                                     'live_info': live_info,
                                     'tournament_round': tournament_round,
                                     'home_seed': home_seed,
-                                    'away_seed': away_seed
+                                    'away_seed': away_seed,
+                                    'home_probable_jersey': home_probable_jersey,
+                                    'away_probable_jersey': away_probable_jersey,
                                 }
                                 all_games.append(game)
                                 games_found += 1
@@ -1404,7 +1418,8 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
                 # Extract inning information
                 situation = competitions.get('situation', {})
                 count = situation.get('count', {})
-                
+                pitcher_jersey = situation.get('pitcher', {}).get('athlete', {}).get('jersey', '')
+
                 live_info.update({
                     'inning': status.get('period', 1),
                     'inning_half': 'top',  # Default
@@ -1415,7 +1430,8 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
                         situation.get('onFirst', False),
                         situation.get('onSecond', False),
                         situation.get('onThird', False)
-                    ]
+                    ],
+                    'pitcher_jersey': pitcher_jersey,
                 })
                 
                 # Determine inning half from status detail
@@ -1921,6 +1937,24 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
             away_team_record_text = str(away_score)
             home_team_record_text = str(home_score)
 
+        # Append pitcher jersey number for baseball (pre-game probable / live current)
+        _sport = self.league_configs.get(league_key, {}).get('sport') if league_key else None
+        if _sport == 'baseball':
+            if is_live and live_info:
+                pitcher_jersey = live_info.get('pitcher_jersey', '')
+                if pitcher_jersey:
+                    if live_info.get('inning_half', 'top') == 'top':
+                        home_team_record_text = f"{home_team_record_text} ({pitcher_jersey})"
+                    else:
+                        away_team_record_text = f"{away_team_record_text} ({pitcher_jersey})"
+            else:
+                away_jersey = game.get('away_probable_jersey', '')
+                home_jersey = game.get('home_probable_jersey', '')
+                if away_jersey:
+                    away_team_record_text = f"{away_team_record_text} ({away_jersey})"
+                if home_jersey:
+                    home_team_record_text = f"{home_team_record_text} ({home_jersey})"
+
         team_info_width = max(
             int(temp_draw.textlength(away_team_name_text,   font=team_font)),
             int(temp_draw.textlength(away_team_record_text, font=team_font)),
@@ -2221,6 +2255,24 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
             home_score = live_info.get('home_score', 0)
             away_team_text = f"{away_team_name}:{away_score} "
             home_team_text = f"{home_team_name}:{home_score} "
+
+        # Append pitcher jersey number for baseball (pre-game probable / live current)
+        _sport = self.league_configs.get(league_key, {}).get('sport') if league_key else None
+        if _sport == 'baseball':
+            if is_live and live_info:
+                pitcher_jersey = live_info.get('pitcher_jersey', '')
+                if pitcher_jersey:
+                    if live_info.get('inning_half', 'top') == 'top':
+                        home_team_text = f"{home_team_text.rstrip()} ({pitcher_jersey})"
+                    else:
+                        away_team_text = f"{away_team_text.rstrip()} ({pitcher_jersey})"
+            else:
+                away_jersey = game.get('away_probable_jersey', '')
+                home_jersey = game.get('home_probable_jersey', '')
+                if away_jersey:
+                    away_team_text = f"{away_team_text} ({away_jersey})"
+                if home_jersey:
+                    home_team_text = f"{home_team_text} ({home_jersey})"
 
         team_info_width = max(
             int(temp_draw.textlength(away_team_text, font=team_font)),
