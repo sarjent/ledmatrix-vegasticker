@@ -6,6 +6,9 @@ A LEDMatrix plugin that displays scrolling odds, betting lines, and live scores 
 
 ## Changelog
 
+### 1.5.1 (2026-07-18)
+- **Fix:** No-data fallback screen now shows the correct league logo (`mlb.png`, `nfl.png`, etc.) from the LEDMatrix core assets instead of a team logo. For leagues with no bundled logo (MiLB, NCAA Baseball, Soccer) the league name is shown as text above "No Games".
+
 ### 1.5.0 (2026-07-18)
 - **Feature:** No-data fallback screen is now a black background with "No Games" in white. If any team logos for an enabled league have already been downloaded, one is shown centered above the text. Previously showed a grey background with "No odds data".
 

@@ -3087,6 +3087,26 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
 
     def _display_fallback_message(self):
         """Display a 'No Games' screen on a black background with a league logo if available."""
+        # League logo filenames within each league's logo_dir in the core assets
+        league_logo_files = {
+            'mlb':              'mlb.png',
+            'nfl':              'nfl.png',
+            'nba':              'nba.png',
+            'nhl':              'NHL.png',
+            'ncaa_fb':          'ncaa_fb.png',
+            'ncaam_basketball': 'ncaam.png',
+        }
+        league_display_names = {
+            'mlb':              'MLB',
+            'nfl':              'NFL',
+            'nba':              'NBA',
+            'nhl':              'NHL',
+            'milb':             'MiLB',
+            'ncaa_fb':          'NCAA FB',
+            'ncaam_basketball': 'NCAA BB',
+            'ncaa_baseball':    'NCAA Baseball',
+            'soccer':           'Soccer',
+        }
         try:
             width = self.display_manager.matrix.width
             height = self.display_manager.matrix.height
@@ -3094,10 +3114,18 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
             image = Image.new('RGB', (width, height), color=(0, 0, 0))
             draw = ImageDraw.Draw(image)
 
-            # Find a logo from the first enabled league that has downloaded assets.
-            # Prefer the user's configured favorite teams; fall back to any file in the dir.
+            # Find the league logo for the first enabled league that has one;
+            # also record the display name as a text fallback when no logo file exists.
             logo_image = None
+            fallback_league_name = None
+            first_enabled = self.enabled_leagues[0] if self.enabled_leagues else None
+            if first_enabled:
+                fallback_league_name = league_display_names.get(first_enabled, first_enabled.upper())
+
             for league_key in self.enabled_leagues:
+                logo_file = league_logo_files.get(league_key)
+                if not logo_file:
+                    continue
                 lc = self.league_configs.get(league_key, {})
                 logo_dir = lc.get('logo_dir', '')
                 if not logo_dir:
@@ -3105,18 +3133,11 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
                 logo_dir_path = Path(logo_dir)
                 if not logo_dir_path.is_absolute():
                     logo_dir_path = self.project_root / logo_dir_path
-                if not logo_dir_path.exists():
-                    continue
-                candidates = []
-                for abbr in lc.get('favorite_teams', []):
-                    p = logo_dir_path / f"{abbr}.png"
-                    if p.exists():
-                        candidates.append(p)
-                if not candidates:
-                    candidates = list(logo_dir_path.glob('*.png'))[:1]
-                if candidates:
-                    logo_image = self.convert_image(candidates[0])
+                logo_path = logo_dir_path / logo_file
+                if logo_path.exists():
+                    logo_image = self.convert_image(logo_path)
                     if logo_image:
+                        fallback_league_name = None  # logo found; no text fallback needed
                         break
 
             message = "No Games"
@@ -3140,11 +3161,17 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
 
                 text_x = (width - text_width) // 2
                 text_y = start_y + logo_h + gap
+                draw.text((text_x, text_y), message, font=font, fill=(255, 255, 255))
+            elif fallback_league_name:
+                # No logo file: show league name above "No Games"
+                name_width = int(draw.textlength(fallback_league_name, font=font))
+                gap = 2
+                total_h = font_h + gap + font_h
+                start_y = (height - total_h) // 2
+                draw.text(((width - name_width) // 2, start_y), fallback_league_name, font=font, fill=(255, 255, 255))
+                draw.text(((width - text_width) // 2, start_y + font_h + gap), message, font=font, fill=(255, 255, 255))
             else:
-                text_x = (width - text_width) // 2
-                text_y = (height - font_h) // 2
-
-            draw.text((text_x, text_y), message, font=font, fill=(255, 255, 255))
+                draw.text(((width - text_width) // 2, (height - font_h) // 2), message, font=font, fill=(255, 255, 255))
 
             self.display_manager.image = image
             self.display_manager.draw = ImageDraw.Draw(self.display_manager.image)
