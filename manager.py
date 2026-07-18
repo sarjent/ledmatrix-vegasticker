@@ -3086,36 +3086,70 @@ class VegasSportsTickerPlugin(BasePlugin, BaseOddsManager):
             self._display_fallback_message()
 
     def _display_fallback_message(self):
-        """Display a fallback message when no games data is available."""
+        """Display a 'No Games' screen on a black background with a league logo if available."""
         try:
             width = self.display_manager.matrix.width
             height = self.display_manager.matrix.height
-            
-            logger.info(f"Displaying fallback message on {width}x{height} display")
-            
-            # Create a simple fallback image with a brighter background
-            image = Image.new('RGB', (width, height), color=(50, 50, 50))  # Dark gray instead of black
+
+            image = Image.new('RGB', (width, height), color=(0, 0, 0))
             draw = ImageDraw.Draw(image)
-            
-            # Draw a simple message with larger font
-            message = "No odds data"
-            font = self.fonts['large']  # Use large font for better visibility
-            text_width = draw.textlength(message, font=font)
-            text_x = (width - text_width) // 2
-            text_y = (height - font.size) // 2
-            
-            logger.info(f"Drawing fallback message: '{message}' at position ({text_x}, {text_y})")
-            
-            # Draw with bright white text and black outline
-            self._draw_text_with_outline(draw, message, (text_x, text_y), font, fill=(255, 255, 255), outline_color=(0, 0, 0))
-            
-            # Display the fallback image
+
+            # Find a logo from the first enabled league that has downloaded assets.
+            # Prefer the user's configured favorite teams; fall back to any file in the dir.
+            logo_image = None
+            for league_key in self.enabled_leagues:
+                lc = self.league_configs.get(league_key, {})
+                logo_dir = lc.get('logo_dir', '')
+                if not logo_dir:
+                    continue
+                logo_dir_path = Path(logo_dir)
+                if not logo_dir_path.is_absolute():
+                    logo_dir_path = self.project_root / logo_dir_path
+                if not logo_dir_path.exists():
+                    continue
+                candidates = []
+                for abbr in lc.get('favorite_teams', []):
+                    p = logo_dir_path / f"{abbr}.png"
+                    if p.exists():
+                        candidates.append(p)
+                if not candidates:
+                    candidates = list(logo_dir_path.glob('*.png'))[:1]
+                if candidates:
+                    logo_image = self.convert_image(candidates[0])
+                    if logo_image:
+                        break
+
+            message = "No Games"
+            font = self.team_font
+            font_h = font.size if hasattr(font, 'size') else 8
+            text_width = int(draw.textlength(message, font=font))
+
+            if logo_image:
+                max_logo_h = height - font_h - 4
+                scale = min(1.0, max_logo_h / logo_image.height)
+                logo_w = int(logo_image.width * scale)
+                logo_h = int(logo_image.height * scale)
+                logo_image = logo_image.resize((logo_w, logo_h), Image.Resampling.LANCZOS)
+
+                gap = 2
+                total_h = logo_h + gap + font_h
+                start_y = (height - total_h) // 2
+
+                logo_x = (width - logo_w) // 2
+                image.paste(logo_image, (logo_x, start_y), logo_image if logo_image.mode == 'RGBA' else None)
+
+                text_x = (width - text_width) // 2
+                text_y = start_y + logo_h + gap
+            else:
+                text_x = (width - text_width) // 2
+                text_y = (height - font_h) // 2
+
+            draw.text((text_x, text_y), message, font=font, fill=(255, 255, 255))
+
             self.display_manager.image = image
             self.display_manager.draw = ImageDraw.Draw(self.display_manager.image)
             self.display_manager.update_display()
-            
-            logger.info("Fallback message display completed")
-            
+
         except Exception as e:
             logger.error(f"Error displaying fallback message: {e}", exc_info=True)
 

@@ -6,6 +6,9 @@ A LEDMatrix plugin that displays scrolling odds, betting lines, and live scores 
 
 ## Changelog
 
+### 1.5.0 (2026-07-18)
+- **Feature:** No-data fallback screen is now a black background with "No Games" in white. If any team logos for an enabled league have already been downloaded, one is shown centered above the text. Previously showed a grey background with "No odds data".
+
 ### 1.4.0 (2026-06-28)
 - **Feature:** MLB (and MiLB/NCAA baseball) pre-game displays now show each team's probable starting pitcher's jersey number in parentheses next to their record. Live games show the current pitcher's jersey number next to the pitching team's score, updated each refresh.
 
